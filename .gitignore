@@ -1,0 +1,4 @@
+*.csv
+*.jar
+target
+*.swp
