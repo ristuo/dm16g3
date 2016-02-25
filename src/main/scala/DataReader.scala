@@ -2,6 +2,7 @@ package dm
 
 import scala.io.Source
 import scala.util.Sorting
+import ArrayUtil._
 
 object DataReader {
     def readCsv(dataPath: String): Array[Student] = {
@@ -38,5 +39,21 @@ object DataReader {
                         suoritukset.course.code)
             )
         data
+    }
+    
+    def negativeCourses(data: Array[Student]) = {
+        val courseCodes = data.map(_.suoritukset.map(_.course.code)).flatten.distinct 
+        val newSet = data.map(student => courseCodes - student.suoritukset.map(_.course.code))
+        newSet.foreach(Sorting.quickSort(_))
+        newSet
+    }
+
+    /**
+    * Reads an array of course codes from file.
+    * @param dataPath filepath to a file where there is one course code per line
+    * @return Array[Int] of course codes
+    */
+    def getCourses(dataPath: String): Array[Int] = {
+        Source.fromFile(dataPath).getLines.toArray.map(_.toInt) 
     }
 }

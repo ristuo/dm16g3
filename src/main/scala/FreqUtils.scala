@@ -2,6 +2,7 @@ package dm
 
 import scala.util.control._
 import scala.util.Sorting
+import ArrayUtil._
 
 object FreqUtils {
     
@@ -12,13 +13,6 @@ object FreqUtils {
     }
 
     def droppy(x: Array[Int], k: Int) = (x.view.take(k) ++ x.view.drop(k+1)).toArray
-
-    //wow scala is so great! with this one simple trick i can actually write Array[Int] - Array[Int] for difference of sets
-    implicit class CoolArray(a: Array[Int]) {
-        def -(x: Array[Int]) = a.filter(!x.contains(_))
-        def ts() = if (a.size==0) "" else "" + a(0) + a.tail.foldLeft("")( (a,b) => a + "," + b)
-    }
-
 
     def support( data: Array[Array[Int]], codes: Array[Int])(implicit d: DummyImplicit) = {
         countSet(data, codes).toDouble/data.size.toDouble
