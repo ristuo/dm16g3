@@ -12,6 +12,12 @@ object FreqUtils {
         tmp
     }
 
+    def suitabledata(data: Array[Array[Course]]) = {
+        val tmp = data.map(_.map(_.code).distinct)
+        tmp.foreach(x => Sorting.quickSort(x))
+        tmp
+    }
+
     def droppy(x: Array[Int], k: Int) = (x.view.take(k) ++ x.view.drop(k+1)).toArray
 
     def support( data: Array[Array[Int]], codes: Array[Int])(implicit d: DummyImplicit) = {
@@ -32,6 +38,21 @@ object FreqUtils {
 
     def is(x: Rule, data: Array[Array[Int]]) = Math.sqrt( lift(x,data)*support(data,x.premiss++x.consequent) )
 
+    def genrulesForConsequent(minconf: Double, depth: Int, maxdepth: Int, data: Array[Array[Int]], consequent: Array[Int], freq: Array[Array[Int]]): List[Rule] = {
+        if (depth >= maxdepth) {
+            return List[Rule]()
+        }
+        var res = List[Rule]()
+        freq.foreach(fk => {
+            val confidence = support(data, fk ++ consequent)/support(data, fk) 
+            val lift = confidence/support(data,consequent)
+            if (confidence > minconf) {
+                res = res ++ List(Rule(fk, consequent, confidence, lift))
+            }
+        })
+        return res ++ genrulesForConsequent(minconf, depth + 1, maxdepth, data, consequent, apriorigen(freq))
+    }
+
     def apgenrules(depth: Int, fk: Array[Int], hm: Array[Array[Int]], data: Array[Array[Int]], minconf: Double, minlift: Double): List[Rule] = {
         if (depth > 10)
             return List[Rule]()
@@ -40,7 +61,7 @@ object FreqUtils {
         val k = fk.size
         val m = hm(0).size
         var res = List[Rule]()
-        if (k > m + 1) {
+        if (k >= m + 1) {
             val hm1 = apriorigen(hm)
             val hm1updated = hm1.map(consequent => {
                 //look how nicely the implicit class works here! 
@@ -54,11 +75,12 @@ object FreqUtils {
                     new Array[Int](0)                    
                 }
             }).filter(_.size > 0)
-        return res ++ apgenrules(depth+1, fk, hm1updated, data, minconf, minlift)
+            return res ++ apgenrules(depth+1, fk, hm1updated, data, minconf, minlift)
         }
         return res
     }
 
+//This is broken
     def rulegeneration(freq: Array[Array[Int]], data: Array[Array[Int]], minconf: Double, minlift: Double) = {
         var res = List[Rule]()
         freq.foreach(fk => {
